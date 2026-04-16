@@ -11,7 +11,7 @@ export default function RootPage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      router.replace("/login");
+      router.replace("/landing");
     } else if (user.role === "ADMIN") {
       router.replace("/admin/dashboard");
     } else {

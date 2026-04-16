@@ -55,10 +55,36 @@ async function apiFetch<T>(path: string, token: string): Promise<T> {
   return data as T;
 }
 
+export type TrendPeriod = "7d" | "30d" | "month" | "year" | "custom";
+
 export function getAdminDashboard(token: string): Promise<AdminDashboard> {
   return apiFetch("/dashboard/admin", token);
 }
 
 export function getFarmerDashboard(token: string): Promise<FarmerDashboard> {
   return apiFetch("/dashboard/farmer", token);
+}
+
+export function getFarmerTrend(
+  token: string,
+  period: TrendPeriod,
+  from?: string,
+  to?: string,
+): Promise<TrendPoint[]> {
+  const p = new URLSearchParams({ period });
+  if (from) p.set("from", from);
+  if (to) p.set("to", to);
+  return apiFetch(`/dashboard/farmer/trend?${p.toString()}`, token);
+}
+
+export function getAdminTrend(
+  token: string,
+  period: TrendPeriod,
+  from?: string,
+  to?: string,
+): Promise<TrendPoint[]> {
+  const p = new URLSearchParams({ period });
+  if (from) p.set("from", from);
+  if (to) p.set("to", to);
+  return apiFetch(`/dashboard/admin/trend?${p.toString()}`, token);
 }

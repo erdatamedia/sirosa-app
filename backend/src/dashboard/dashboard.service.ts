@@ -32,6 +32,92 @@ function buildTrend(
   }));
 }
 
+export type TrendPeriod = '7d' | '30d' | 'month' | 'year' | 'custom';
+
+function resolveDateRange(
+  period: TrendPeriod,
+  from?: string,
+  to?: string,
+): { dateFrom: Date; dateTo: Date; groupBy: 'day' | 'month' } {
+  const now = new Date();
+  let dateFrom: Date;
+  const dateTo = new Date(now);
+  dateTo.setHours(23, 59, 59, 999);
+  let groupBy: 'day' | 'month' = 'day';
+
+  if (period === '30d') {
+    dateFrom = new Date(now);
+    dateFrom.setDate(dateFrom.getDate() - 29);
+    dateFrom.setHours(0, 0, 0, 0);
+  } else if (period === 'month') {
+    dateFrom = new Date(now.getFullYear(), now.getMonth(), 1);
+  } else if (period === 'year') {
+    dateFrom = new Date(now.getFullYear(), 0, 1);
+    groupBy = 'month';
+  } else if (period === 'custom' && from && to) {
+    dateFrom = new Date(from);
+    dateFrom.setHours(0, 0, 0, 0);
+    const customTo = new Date(to);
+    customTo.setHours(23, 59, 59, 999);
+    const diffDays =
+      (customTo.getTime() - dateFrom.getTime()) / (1000 * 60 * 60 * 24);
+    if (diffDays > 60) groupBy = 'month';
+    return { dateFrom, dateTo: customTo, groupBy };
+  } else {
+    // Default: 7d
+    dateFrom = new Date(now);
+    dateFrom.setDate(dateFrom.getDate() - 6);
+    dateFrom.setHours(0, 0, 0, 0);
+  }
+  return { dateFrom, dateTo, groupBy };
+}
+
+function buildDailyTrendRange(
+  records: { date: Date; amount: number }[],
+  from: Date,
+  to: Date,
+): { date: string; total: number }[] {
+  const map = new Map<string, number>();
+  const cur = new Date(from);
+  cur.setHours(0, 0, 0, 0);
+  const end = new Date(to);
+  end.setHours(0, 0, 0, 0);
+  while (cur <= end) {
+    map.set(cur.toISOString().slice(0, 10), 0);
+    cur.setDate(cur.getDate() + 1);
+  }
+  for (const r of records) {
+    const key = r.date.toISOString().slice(0, 10);
+    if (map.has(key)) map.set(key, (map.get(key) ?? 0) + r.amount);
+  }
+  return Array.from(map.entries()).map(([date, total]) => ({
+    date,
+    total: Math.round(total * 100) / 100,
+  }));
+}
+
+function buildMonthlyTrendRange(
+  records: { date: Date; amount: number }[],
+  from: Date,
+  to: Date,
+): { date: string; total: number }[] {
+  const map = new Map<string, number>();
+  const cur = new Date(from.getFullYear(), from.getMonth(), 1);
+  const end = new Date(to.getFullYear(), to.getMonth(), 1);
+  while (cur <= end) {
+    map.set(cur.toISOString().slice(0, 7), 0);
+    cur.setMonth(cur.getMonth() + 1);
+  }
+  for (const r of records) {
+    const key = r.date.toISOString().slice(0, 7);
+    if (map.has(key)) map.set(key, (map.get(key) ?? 0) + r.amount);
+  }
+  return Array.from(map.entries()).map(([date, total]) => ({
+    date,
+    total: Math.round(total * 100) / 100,
+  }));
+}
+
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
@@ -279,5 +365,57 @@ export class DashboardService {
       topCows,
       lowCows,
     };
+  }
+
+  // ── Trend endpoints ───────────────────────────────────────────────────────────
+
+  private async fetchTrend(
+    cowIds: string[] | null,
+    period: TrendPeriod,
+    from?: string,
+    to?: string,
+  ): Promise<{ date: string; total: number }[]> {
+    const { dateFrom, dateTo, groupBy } = resolveDateRange(period, from, to);
+
+    const where: {
+      date: { gte: Date; lte: Date };
+      cowId?: { in: string[] };
+    } = { date: { gte: dateFrom, lte: dateTo } };
+    if (cowIds !== null) where.cowId = { in: cowIds };
+
+    const records = await this.prisma.milkProduction.findMany({
+      where,
+      select: { date: true, amount: true },
+    });
+
+    return groupBy === 'month'
+      ? buildMonthlyTrendRange(records, dateFrom, dateTo)
+      : buildDailyTrendRange(records, dateFrom, dateTo);
+  }
+
+  async farmerTrend(
+    userId: string,
+    period: TrendPeriod,
+    from?: string,
+    to?: string,
+  ) {
+    const farm = await this.prisma.farm.findUnique({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+    if (!farm) return [];
+
+    const activeCowIds = await this.prisma.cow
+      .findMany({
+        where: { farmId: farm.id, status: 'ACTIVE' },
+        select: { id: true },
+      })
+      .then((cows) => cows.map((c) => c.id));
+
+    return this.fetchTrend(activeCowIds, period, from, to);
+  }
+
+  async adminTrend(period: TrendPeriod, from?: string, to?: string) {
+    return this.fetchTrend(null, period, from, to);
   }
 }

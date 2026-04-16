@@ -21,7 +21,13 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
-import { type AdminDashboard, getAdminDashboard } from "@/lib/dashboard-api";
+import {
+  type AdminDashboard,
+  type TrendPoint,
+  type TrendPeriod,
+  getAdminDashboard,
+  getAdminTrend,
+} from "@/lib/dashboard-api";
 
 // ─── Count-up hook ────────────────────────────────────────────────────────────
 function useCountUp(target: number, decimals = 0, duration = 900) {
@@ -90,27 +96,100 @@ function StatCard({
   );
 }
 
+// ─── Period filter labels ─────────────────────────────────────────────────────
+const PERIOD_LABELS: Record<TrendPeriod, string> = {
+  "7d": "7 Hari",
+  "30d": "30 Hari",
+  month: "Bulan Ini",
+  year: "Tahun Ini",
+  custom: "Kustom",
+};
+
+function formatTrendLabel(date: string): string {
+  if (date.length === 7) {
+    const [y, m] = date.split("-");
+    return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("id-ID", {
+      month: "short",
+      year: "2-digit",
+    });
+  }
+  return new Date(date).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 // ─── Trend chart ─────────────────────────────────────────────────────────────
-function TrendChart({ data }: { data: { date: string; total: number }[] }) {
+function TrendChart({ token }: { token: string }) {
+  const [period, setPeriod] = useState<TrendPeriod>("7d");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
+  const [data, setData] = useState<TrendPoint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (period === "custom" && (!customFrom || !customTo)) return;
+    setLoading(true);
+    getAdminTrend(token, period, customFrom || undefined, customTo || undefined)
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, [token, period, customFrom, customTo]);
+
   const formatted = data.map((d) => ({
     total: d.total,
-    label: new Date(d.date).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-    }),
+    label: formatTrendLabel(d.date),
   }));
-
   const hasData = data.some((d) => d.total > 0);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
-      <p className="text-sm font-semibold text-gray-700 mb-4">
-        Tren Produksi 7 Hari (L/hari)
-      </p>
-      {!hasData ? (
+      {/* Header + period filter */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <p className="text-sm font-semibold text-gray-700">Tren Produksi (L)</p>
+        <div className="flex gap-1 flex-wrap">
+          {(Object.keys(PERIOD_LABELS) as TrendPeriod[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                period === p
+                  ? "bg-[#16a34a] text-white"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {PERIOD_LABELS[p]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom date pickers */}
+      {period === "custom" && (
+        <div className="flex gap-2 mb-4">
+          <input
+            type="date"
+            value={customFrom}
+            onChange={(e) => setCustomFrom(e.target.value)}
+            className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+          />
+          <span className="text-xs text-gray-400 self-center">–</span>
+          <input
+            type="date"
+            value={customTo}
+            onChange={(e) => setCustomTo(e.target.value)}
+            className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#16a34a]"
+          />
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex items-center justify-center h-[250px]">
+          <div className="w-5 h-5 border-2 border-[#16a34a] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : !hasData ? (
         <div className="flex items-center justify-center h-[250px]">
           <p className="text-sm text-gray-400 text-center max-w-xs">
-            Belum ada data produksi. Mulai catat produksi susu sapi Anda.
+            Belum ada data produksi pada periode ini.
           </p>
         </div>
       ) : (
@@ -249,7 +328,7 @@ export default function AdminDashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.35 }}
         >
-          <TrendChart data={d.productionTrend} />
+          <TrendChart token={token!} />
         </motion.div>
 
         {/* Top 5 Cows — 40% */}
