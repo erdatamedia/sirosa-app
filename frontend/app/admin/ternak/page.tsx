@@ -50,7 +50,7 @@ function isFormValid(f: CreateCowInput, isAdmin: boolean) {
   if (
     f.currentWeight !== undefined &&
     f.currentWeight !== null &&
-    (f.currentWeight < 200 || f.currentWeight > 800)
+    (f.currentWeight < 250 || f.currentWeight > 700)
   )
     return false;
   if (
@@ -208,14 +208,14 @@ function CowForm({ initial, farms, onSave, onCancel, saving, error }: CowFormPro
           <label className="text-xs font-medium text-gray-600 block mb-1">BB (kg)</label>
           <input
             type="number"
-            min={200}
-            max={800}
+            min={250}
+            max={700}
             step={1}
             value={form.currentWeight ?? ""}
             onChange={(e) =>
               set("currentWeight", e.target.value === "" ? undefined : parseFloat(e.target.value))
             }
-            placeholder="200–800"
+            placeholder="250–700"
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-300"
           />
         </div>

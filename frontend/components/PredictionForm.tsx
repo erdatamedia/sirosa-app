@@ -60,7 +60,7 @@ export default function PredictionForm({
       inRange(form.bcs, 2, 4)
     : inRange(form.ll, 2, 9) &&
       inRange(form.bcs, 2, 4) &&
-      inRange(form.weight, 200, 800);
+      inRange(form.weight, 250, 700);
 
   async function handleSubmit() {
     if (!isValid) return;
@@ -159,8 +159,8 @@ export default function PredictionForm({
                 hint="berat sapi dalam kg"
                 value={form.weight}
                 onChange={set("weight")}
-                min={200}
-                max={800}
+                min={250}
+                max={700}
                 unit="kg"
               />
             )}

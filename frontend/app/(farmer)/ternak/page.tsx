@@ -42,7 +42,7 @@ function isFormValid(f: CreateCowInput) {
   if (
     f.currentWeight !== undefined &&
     f.currentWeight !== null &&
-    (f.currentWeight < 200 || f.currentWeight > 800)
+    (f.currentWeight < 250 || f.currentWeight > 700)
   )
     return false;
   if (
@@ -151,11 +151,11 @@ function CowForm({ initial, onSave, onCancel, saving, error }: CowFormProps) {
 
       {/* Bobot badan */}
       <div>
-        <label className="text-xs font-medium text-gray-600 block mb-1">Bobot Badan (kg, 200–800)</label>
+        <label className="text-xs font-medium text-gray-600 block mb-1">Bobot Badan (kg, 250–700)</label>
         <input
           type="number"
-          min={200}
-          max={800}
+          min={250}
+          max={700}
           step={1}
           value={form.currentWeight ?? ""}
           onChange={(e) =>
@@ -166,8 +166,8 @@ function CowForm({ initial, onSave, onCancel, saving, error }: CowFormProps) {
         />
         {form.currentWeight !== undefined &&
           form.currentWeight !== null &&
-          (form.currentWeight < 200 || form.currentWeight > 800) && (
-            <p className="text-[11px] text-red-500 mt-0.5">Bobot harus antara 200–800 kg</p>
+          (form.currentWeight < 250 || form.currentWeight > 700) && (
+            <p className="text-[11px] text-red-500 mt-0.5">Bobot harus antara 250–700 kg</p>
           )}
       </div>
 

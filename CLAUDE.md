@@ -13,7 +13,7 @@
 - BCS: 2-4 (boleh desimal)
 - Paritas: 1-6 (integer)
 - Bulan Laktasi: 2-9 (integer)
-- Bobot Badan: 200-800 kg (hanya untuk Model B)
+- Bobot Badan: 250-700 kg (hanya untuk Model B)
 
 ### Aturan
 - Input di luar range validasi = tombol submit disabled

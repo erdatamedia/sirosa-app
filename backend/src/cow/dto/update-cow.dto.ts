@@ -31,8 +31,8 @@ export class UpdateCowDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(200)
-  @Max(800)
+  @Min(250)
+  @Max(700)
   currentWeight?: number;
 
   @IsOptional()

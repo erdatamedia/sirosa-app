@@ -36,11 +36,11 @@ export class PredictDto {
   @Max(4)
   bcs: number;
 
-  // Model B only: bobot badan 200-800 kg
+  // Model B only: bobot badan 250-700 kg
   @ValidateIf((o) => o.model === PredictionModel.B)
   @IsNumber()
-  @Min(200)
-  @Max(800)
+  @Min(250)
+  @Max(700)
   weight?: number;
 }
 
