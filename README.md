@@ -1,4 +1,4 @@
-# SIROSA — Sistem Informasi Produksi Susu Sapi
+# SIROSA — Aplikasi Prediksi Produksi Susu Sapi Perah
 
 Aplikasi berbasis web untuk prediksi dan pencatatan produksi susu sapi perah. Dirancang untuk peternak kecil hingga menengah dengan tampilan mobile-first yang ringan dan mudah digunakan.
 

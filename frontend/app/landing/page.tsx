@@ -52,7 +52,7 @@ export default function LandingPage() {
             SIROSA
           </h1>
           <p className="text-sm text-gray-500 leading-relaxed max-w-[280px] mx-auto">
-            Sistem Informasi Produksi Susu Sapi Perah berbasis prediksi regresi linier
+            Aplikasi Prediksi Produksi Susu Sapi Perah
           </p>
         </motion.div>
 

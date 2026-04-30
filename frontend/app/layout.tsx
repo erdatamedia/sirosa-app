@@ -9,8 +9,8 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "SIROSA — Sistem Informasi Produksi Susu",
-  description: "Aplikasi prediksi produksi susu sapi perah berbasis regresi linier",
+  title: "SIROSA — Aplikasi Prediksi Produksi Susu",
+  description: "Aplikasi Prediksi Produksi Susu Sapi Perah",
 };
 
 export default function RootLayout({

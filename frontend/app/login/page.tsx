@@ -83,7 +83,7 @@ function LoginForm() {
             <span className="text-3xl">🐄</span>
             <h1 className="text-2xl font-bold text-[#15803d] tracking-tight">SIROSA</h1>
           </div>
-          <p className="text-sm text-gray-500">Sistem Informasi Produksi Susu Sapi Perah</p>
+          <p className="text-sm text-gray-500">Aplikasi Prediksi Produksi Susu Sapi Perah</p>
         </div>
 
         {/* Card */}
