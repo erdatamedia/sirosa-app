@@ -37,20 +37,27 @@ export class CowService {
     const existing = await this.prisma.cow.findUnique({ where: { earTag: dto.earTag } });
     if (existing) throw new ConflictException('Nomor earTag sudah terdaftar. Gunakan nomor earTag yang berbeda.');
 
-    return this.prisma.cow.create({
-      data: {
-        earTag: dto.earTag,
-        name: dto.name,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        parity: dto.parity,
-        currentWeight: dto.currentWeight,
-        currentBCS: dto.currentBCS,
-        lactationMonth: dto.lactationMonth,
-        status: dto.status,
-        farmId,
-      },
-      include: { farm: { select: { id: true, name: true } } },
-    });
+    try {
+      return await this.prisma.cow.create({
+        data: {
+          earTag: dto.earTag,
+          name: dto.name,
+          birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+          parity: dto.parity,
+          currentWeight: dto.currentWeight,
+          currentBCS: dto.currentBCS,
+          lactationMonth: dto.lactationMonth,
+          status: dto.status,
+          farmId,
+        },
+        include: { farm: { select: { id: true, name: true } } },
+      });
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        throw new ConflictException('Nomor earTag sudah terdaftar. Gunakan nomor earTag yang berbeda.');
+      }
+      throw error;
+    }
   }
 
   async findAll(
