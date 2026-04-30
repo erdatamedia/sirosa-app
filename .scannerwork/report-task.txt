@@ -1,0 +1,6 @@
+projectKey=sirosa-app
+serverUrl=http://localhost:9000
+serverVersion=26.4.0.121862
+dashboardUrl=http://localhost:9000/dashboard?id=sirosa-app
+ceTaskId=897e3cff-56ec-491f-9c2e-1cf143afdfc1
+ceTaskUrl=http://localhost:9000/api/ce/task?id=897e3cff-56ec-491f-9c2e-1cf143afdfc1

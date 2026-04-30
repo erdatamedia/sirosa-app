@@ -35,7 +35,7 @@ export class CowService {
     }
 
     const existing = await this.prisma.cow.findUnique({ where: { earTag: dto.earTag } });
-    if (existing) throw new ConflictException(`EarTag '${dto.earTag}' sudah terdaftar`);
+    if (existing) throw new ConflictException('Nomor earTag sudah terdaftar. Gunakan nomor earTag yang berbeda.');
 
     return this.prisma.cow.create({
       data: {
