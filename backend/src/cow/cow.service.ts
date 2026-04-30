@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -32,6 +33,9 @@ export class CowService {
     } else {
       farmId = await this.getFarmIdForUser(user.id);
     }
+
+    const existing = await this.prisma.cow.findUnique({ where: { earTag: dto.earTag } });
+    if (existing) throw new ConflictException(`EarTag '${dto.earTag}' sudah terdaftar`);
 
     return this.prisma.cow.create({
       data: {
